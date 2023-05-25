@@ -278,7 +278,9 @@ mark_remove() {
 }
 
 mark_replace() {
-  mkdir -p ${1%/*} 2>/dev/null
+  # REPLACE must be directory!!!
+  # https://docs.kernel.org/filesystems/overlayfs.html#whiteouts-and-opaque-directories
+  mkdir -p $1 2>/dev/null
   setfattr -n trusted.overlay.opaque -v y $1
   chmod 644 $1
 }
@@ -389,10 +391,6 @@ install_module() {
     [ -f $MODPATH/customize.sh ] && . $MODPATH/customize.sh
   fi
 
-  handle_partition vendor
-  handle_partition system_ext
-  handle_partition product
-
   # Handle replace folders
   for TARGET in $REPLACE; do
     ui_print "- Replace target: $TARGET"
@@ -404,6 +402,10 @@ install_module() {
     ui_print "- Remove target: $TARGET"
     mark_remove $MODPATH$TARGET
   done
+
+  handle_partition vendor
+  handle_partition system_ext
+  handle_partition product
 
   if $BOOTMODE; then
     mktouch $NVBASE/modules/$MODID/update
@@ -434,7 +436,7 @@ install_module() {
 [ -z $BOOTMODE ] && ps -A 2>/dev/null | grep zygote | grep -qv grep && BOOTMODE=true
 [ -z $BOOTMODE ] && BOOTMODE=false
 
-NVBASE=/data/adb/ksu
+NVBASE=/data/adb
 TMPDIR=/dev/tmp
 
 # Some modules dependents on this

@@ -64,6 +64,8 @@ bool ksu_allow_uid(uid_t uid, bool allow, bool persist)
 	p->uid = uid;
 	p->allow = allow;
 
+	pr_info("allow_uid: %d, allow: %d", uid, allow);
+
 	list_add_tail(&p->list, &allow_list);
 	result = true;
 
@@ -102,7 +104,7 @@ bool ksu_get_allow_list(int *array, int *length, bool allow)
 	int i = 0;
 	list_for_each (pos, &allow_list) {
 		p = list_entry(pos, struct perm_data, list);
-		pr_info("get_allow_list uid: %d allow: %d\n", p->uid, p->allow);
+		// pr_info("get_allow_list uid: %d allow: %d\n", p->uid, p->allow);
 		if (p->allow == allow) {
 			array[i++] = p->uid;
 		}
@@ -124,7 +126,7 @@ void do_persistent_allow_list(struct work_struct *work)
 		filp_open(KERNEL_SU_ALLOWLIST, O_WRONLY | O_CREAT, 0644);
 
 	if (IS_ERR(fp)) {
-		pr_err("save_allow_list creat file failed: %d\n", PTR_ERR(fp));
+		pr_err("save_allow_list creat file failed: %ld\n", PTR_ERR(fp));
 		return;
 	}
 
@@ -171,11 +173,11 @@ void do_load_allow_list(struct work_struct *work)
 			ksu_allow_uid(2000, true,
 				      true); // allow adb shell by default
 		} else {
-			pr_err("load_allow_list open file failed: %d\n",
+			pr_err("load_allow_list open file failed: %ld\n",
 			       PTR_ERR(fp));
 		}
 #else
-		pr_err("load_allow_list open file failed: %d\n", PTR_ERR(fp));
+		pr_err("load_allow_list open file failed: %ld\n", PTR_ERR(fp));
 #endif
 		return;
 	}
@@ -200,7 +202,7 @@ void do_load_allow_list(struct work_struct *work)
 		bool allow = false;
 		ret = ksu_kernel_read_compat(fp, &uid, sizeof(uid), &off);
 		if (ret <= 0) {
-			pr_info("load_allow_list read err: %d\n", ret);
+			pr_info("load_allow_list read err: %zd\n", ret);
 			break;
 		}
 		ret = ksu_kernel_read_compat(fp, &allow, sizeof(allow), &off);
