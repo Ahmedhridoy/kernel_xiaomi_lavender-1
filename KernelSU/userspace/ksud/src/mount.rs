@@ -149,7 +149,6 @@ fn mount_overlayfs(
     Mount::builder()
         .fstype(FilesystemType::from("overlay"))
         .data(&options)
-        .flags(MountFlags::RDONLY)
         .mount(KSU_OVERLAY_SOURCE, dest.as_ref())
         .with_context(|| {
             format!(

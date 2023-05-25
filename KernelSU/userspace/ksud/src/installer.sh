@@ -278,9 +278,7 @@ mark_remove() {
 }
 
 mark_replace() {
-  # REPLACE must be directory!!!
-  # https://docs.kernel.org/filesystems/overlayfs.html#whiteouts-and-opaque-directories
-  mkdir -p $1 2>/dev/null
+  mkdir -p ${1%/*} 2>/dev/null
   setfattr -n trusted.overlay.opaque -v y $1
   chmod 644 $1
 }
